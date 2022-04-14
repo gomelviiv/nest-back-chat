@@ -9,7 +9,7 @@ export class UserController {
 
   @Post()
   @UseInterceptors(FileFieldsInterceptor([{ name: 'picture', maxCount: 1 }]))
-  async create(@UploadedFiles() files, @Body() data, @Res() response) {
+  async create(@UploadedFiles() files, @Body() data, @Res({ passthrough: true }) response) {
     try {
       const { email, password, login } = data;
       const { picture } = files;

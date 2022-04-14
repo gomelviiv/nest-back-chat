@@ -7,7 +7,7 @@ import { FileType } from './file.constant';
 
 @Injectable()
 export class FileService {
-  createFile(type: FileType, file) {
+  createFile(type: FileType, file): string {
     try {
       const fileExtension = file.originalname.split('.').pop();
       const fileName = v4() + '.' + fileExtension;
@@ -17,6 +17,8 @@ export class FileService {
         fs.mkdirSync(filePath, { recursive: true });
       }
       fs.writeFileSync(path.resolve(filePath, fileName), file.buffer);
+
+      return type + '/' + fileName;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

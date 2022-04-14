@@ -20,13 +20,6 @@ export class UserService {
     private tokenService: TokenService,
   ) {}
 
-  //   async create(dto: CreateUserDto, picture): Promise<User> {
-  //     const picturePath = this.fileService.createFile(FileType.PICTURE, picture);
-
-  //     const user = await this.userModel.create({ ...dto, picture: picturePath });
-  //     return user;
-  //   }
-
   async registration(email, login, password, picture) {
     const picturePath = this.fileService.createFile(FileType.PICTURE, picture);
 
@@ -38,8 +31,8 @@ export class UserService {
     const activationLink = v4();
 
     const user = await this.userModel.create({
-      email,
       login,
+      email,
       password: hashPassword,
       activationLink,
       picture: picturePath,
@@ -53,7 +46,6 @@ export class UserService {
     return {
       ...tokens,
       user: userDto,
-      picture: picturePath,
     };
   }
 
