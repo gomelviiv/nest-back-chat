@@ -20,8 +20,11 @@ export class UserService {
     private tokenService: TokenService,
   ) {}
 
-  async registration(email, login, password, picture) {
-    const picturePath = this.fileService.createFile(FileType.PICTURE, picture);
+  async registration(data, files, response) {
+    const { email, password, login } = data;
+
+    const { picture } = files;
+    const picturePath = this.fileService.createFile(FileType.PICTURE, picture[0]);
 
     const candidate = await this.userModel.findOne({ email });
     if (candidate) {
@@ -43,10 +46,14 @@ export class UserService {
     const tokens = this.tokenService.generateTokens({ ...userDto });
     await this.tokenService.saveToken(userDto.id, tokens.refreshToken);
 
-    return {
+    const userData = {
       ...tokens,
       user: userDto,
     };
+
+    response.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+
+    return userData;
   }
 
   async getAllUsers(): Promise<User[]> {

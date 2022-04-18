@@ -9,23 +9,9 @@ export class UserController {
 
   @Post()
   @UseInterceptors(FileFieldsInterceptor([{ name: 'picture', maxCount: 1 }]))
-  async create(@UploadedFiles() files, @Body() data, @Res({ passthrough: true }) response) {
+  registration(@UploadedFiles() files, @Body() data, @Res({ passthrough: true }) response) {
     try {
-      const { email, password, login } = data;
-      const { picture } = files;
-
-      const userData = await this.userService.registration(email, login, password, picture[0]);
-      response.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
-
-      return userData;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  @Get()
-  async registration() {
-    try {
+      return this.userService.registration(data, files, response);
     } catch (error) {
       console.log(error);
     }
