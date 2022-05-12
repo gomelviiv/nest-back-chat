@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
-import * as bodyParser from 'body-parser';
 
 const start = async () => {
   try {
@@ -16,6 +15,7 @@ const start = async () => {
       methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
       credentials: true,
     });
+    // app.use(AuthMiddleware);
     app.use(cookieParser());
 
     app.listen(PORT, () => console.log(`server started on PORT:${PORT}`));

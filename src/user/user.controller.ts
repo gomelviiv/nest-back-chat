@@ -42,4 +42,9 @@ export class UserController {
   getOneUser(@Param(':id') id: Types.ObjectId) {
     return this.userService.deleteUserById(id);
   }
+
+  @Get('/check')
+  async getAllUsers() {
+    return await this.userService.getAllUsers();
+  }
 }

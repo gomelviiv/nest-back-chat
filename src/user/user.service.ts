@@ -26,6 +26,10 @@ export class UserService {
     return user;
   }
 
+  async getAllUsers(): Promise<any> {
+    return [1, 2, 3, 4, 5, 6, 7];
+  }
+
   async updateUser(id: Types.ObjectId, ...args) {
     // const user = await this.userModel.findById(id);
     // const updatedUser = {

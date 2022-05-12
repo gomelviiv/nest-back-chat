@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post, Redirect, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Redirect, Req, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FormDataRequest } from 'nestjs-form-data';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -16,10 +17,25 @@ export class AuthController {
     return await this.authService.registration(data, files, response);
   }
 
-  @Redirect(`${process.env.API_APP}`, 301)
   @Get('activate/:link')
-  async activateUser(@Param('link') token) {
-    console.log(process.env.API_APP);
-    return await this.authService.updateActivateUserLink(token);
+  async activateUser(@Param('link') token, @Res({ passthrough: true }) response) {
+    await this.authService.updateActivateUserLink(token);
+    return response.redirect(process.env.API_APP);
+  }
+
+  @Post('/login')
+  @FormDataRequest()
+  async login(@Body() data, @Res({ passthrough: true }) response) {
+    return await this.authService.login(data, response);
+  }
+
+  @Post('/logout')
+  async logout(@Req() request, @Res({ passthrough: true }) response) {
+    return await this.authService.logout(request, response);
+  }
+
+  @Get('/refresh')
+  async refresh(@Req() request, @Res({ passthrough: true }) response) {
+    return await this.authService.refreshToken(request, response);
   }
 }

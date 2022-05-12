@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { MailService } from 'src/mail/mail.service';
 import { TokenService } from 'src/token/token.service';
@@ -54,12 +54,80 @@ export class AuthService {
     };
 
     response.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
-
     return userData;
   }
 
   async updateActivateUserLink(token) {
     await this.userService.activateUser(token);
     return true;
+  }
+
+  async login(data, response) {
+    const { login, password } = data;
+    console.log(login, password);
+    const user = await this.userModel.findOne({ login });
+
+    if (!user) {
+      throw new Error(`Юзер с таким логином не найден`);
+    }
+
+    const isPassEquals = await bcrypt.compare(password, user.password);
+
+    if (!isPassEquals) {
+      throw new Error(`Не верный пароль`);
+    }
+
+    const userDto = new CreateUserDto(user);
+    const tokens = this.tokenService.generateTokens({ ...userDto });
+    await this.tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    const userData = {
+      ...tokens,
+      user: userDto,
+      isAuthenticated: true,
+    };
+
+    response.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+    return userData;
+  }
+
+  async logout(request, response) {
+    const { refreshToken } = request.cookies;
+    const token = await this.tokenService.removeToken(refreshToken);
+    response.cookie('refreshToken');
+    console.log(token);
+    return token;
+  }
+
+  async refreshToken(request, response) {
+    try {
+      const { refreshToken } = request.cookies;
+      if (!refreshToken) {
+        throw new UnauthorizedException('UnauthorizedException', '401');
+      }
+
+      const userData = await this.tokenService.validateRefreshToken(refreshToken);
+      const tokenFromDb = await this.tokenService.findToken(refreshToken);
+
+      if (!userData || !tokenFromDb) {
+        throw new UnauthorizedException('UnauthorizedException', '401');
+      }
+
+      const user = await this.userModel.findById(userData.id);
+      const userDto = new CreateUserDto(user);
+      const tokens = this.tokenService.generateTokens({ ...userDto });
+      await this.tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+      const newUserData = {
+        ...tokens,
+        user: userDto,
+        isAuthenticated: true,
+      };
+
+      response.cookie('refreshToken', newUserData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+      return newUserData;
+    } catch (error) {
+      throw new ForbiddenException('UnauthorizedException', '401');
+    }
   }
 }
