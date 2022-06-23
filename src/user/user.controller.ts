@@ -1,29 +1,50 @@
-import { Body, Controller, Delete, Get, Param, Post, UploadedFiles, UseInterceptors } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UserService } from "./user.service";
-import { Types } from 'mongoose'
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { UserService } from './user.service';
+import { Types } from 'mongoose';
 
-@Controller('/users')
-
+@Controller('/user')
 export class UserController {
+  constructor(private userService: UserService) {}
 
-    constructor(private userService: UserService){}
-
-    @Post()
-    @UseInterceptors(FileFieldsInterceptor([{name: 'picture', maxCount: 1}]))
-    create(@UploadedFiles() files, @Body() dto: CreateUserDto){
-        const {picture} = files
-        return this.userService.create(dto, picture[0])
+  @Get()
+  async login() {
+    try {
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    @Get()
-    getAllUsers(){
-        return this.userService.getAllUsers()
+  @Get()
+  async activate() {
+    try {
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    @Delete(':id')
-    getOneUser(@Param(':id') id: Types.ObjectId){
-        return this.userService.deleteUserById(id)
+  @Get()
+  async refresh() {
+    try {
+    } catch (error) {
+      console.log(error);
     }
+  }
+
+  @Get()
+  async logout() {
+    try {
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Delete(':id')
+  getOneUser(@Param(':id') id: Types.ObjectId) {
+    return this.userService.deleteUserById(id);
+  }
+
+  @Get('/check')
+  async getAllUsers() {
+    return await this.userService.getAllUsers();
+  }
 }
